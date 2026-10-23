@@ -6,7 +6,7 @@ const CHECKS = [
   { id:'c1', cat:'Content', loc:'Summary Section', name:'Resume Summary', desc:'Checks for a compelling professional summary that hooks recruiters in the first 6 seconds.', tip:'Add a 2–3 sentence summary at the top with your target title, core competencies, and a quantified career highlight.' },
   { id:'c2', cat:'Content', loc:'Work Experience', name:'Quantified Achievements', desc:'Detects whether your bullet points use numbers, percentages, or metrics to prove impact.', tip:'Add measurable metrics to at least 50% of bullets (e.g. "Increased revenue by 34%", "Reduced latency from 450ms to 80ms").' },
   { id:'c3', cat:'Content', loc:'Work Experience', name:'Action Verbs', desc:'Checks that bullet points start with strong action verbs rather than weak passive phrases.', tip:'Begin bullets with high-impact verbs: Led, Architected, Delivered, Scaled, Spearheaded, Launched, Engineered.' },
-  { id:'c4', cat:'Content', loc:'Entire Resume', name:'Spelling & Grammar', desc:'Scans for spelling errors, grammar mistakes, and awkward phrasing that signal carelessness.', tip:'Fix highlighted spelling mistakes. Even 1 typo can trigger automatic recruiter rejection.' },
+  { id:'c4', cat:'Content', loc:'Entire Resume', name:'Spelling & Grammar', desc:'Scans for common spelling errors that can signal carelessness.', tip:'Fix highlighted spelling mistakes before submitting; a typo can distract a recruiter.' },
   { id:'c5', cat:'Content', loc:'Work Experience', name:'Repetitive Words', desc:'Identifies overused words and phrases that make your resume feel monotonous.', tip:'Vary your action verbs. Replace repeated words with synonyms (orchestrated, directed, streamlined).' },
   { id:'c6', cat:'Content', loc:'Summary & Bullets', name:'Clichés Detected', desc:'Flags hollow phrases like "team player", "results-driven", "go-getter" that add no value.', tip:'Delete buzzwords and clichés. Replace with concrete, verifiable project results.' },
 
@@ -34,7 +34,7 @@ const CHECKS = [
 
   // PROFILE (5)
   { id:'p1', cat:'Profile', loc:'Header Section', name:'Email Address', desc:'Checks that your email address is professional and formatted for ATS extraction.', tip:'Use a modern format like firstname.lastname@gmail.com. Avoid nicknames, numbers, or outdated domains (AOL/Hotmail).' },
-  { id:'p2', cat:'Profile', loc:'Header Section', name:'LinkedIn URL', desc:'Checks for a customized LinkedIn profile link, essential for modern ATS candidate matching.', tip:'Add a clean LinkedIn URL (linkedin.com/in/yourname) in your header. 87% of recruiters verify candidates on LinkedIn.' },
+  { id:'p2', cat:'Profile', loc:'Header Section', name:'LinkedIn URL', desc:'Checks for a customized LinkedIn profile link that can help a recruiter verify your background.', tip:'If it supports your application, add a clean LinkedIn URL (linkedin.com/in/yourname) in your header.' },
   { id:'p3', cat:'Profile', loc:'Work History', name:'Employment History', desc:'Checks for chronological progression and clear job tenure signals.', tip:'List jobs in reverse chronological order with clear start and end months/years.' },
   { id:'p4', cat:'Profile', loc:'Summary & Header', name:'Target Job Title', desc:'Checks whether your target professional job title is immediately visible.', tip:'State your target title clearly in your headline or summary (e.g. "Senior Full Stack Software Engineer").' },
   { id:'p5', cat:'Profile', loc:'Education Section', name:'Education Details', desc:'Verifies that your academic credentials, institution, and graduation year are detected.', tip:'List: Degree (e.g., B.S. Computer Science), University Name, Location, and Graduation Year.' },
@@ -51,9 +51,9 @@ const CAT_COLORS = {
 
 const FAQS = [
   { q: 'Why is my ATS score low?', a: 'ATS (Applicant Tracking Systems) score resumes using programmatic parsers and rule-based filters. Common reasons for low scores include: (1) Missing LinkedIn or unparsed contact info, (2) Lack of quantified numbers ($/%/metrics) in experience bullets, (3) Missing standard section headings, and (4) Low industry keyword density.' },
-  { q: 'How does ResumeRoast diagnose errors?', a: 'Our engine parses your resume in real time right inside your browser, checks 27 parameters across 5 categories, and isolates the exact location (Header, Summary, Experience, Skills, Format) where ATS software encounters penalties.' },
-  { q: 'How can I boost my ATS score to 90+?', a: 'Follow our Step-by-Step Roadmap: First fix critical fatal errors (Contact & Section Headers), rewrite your bullets using Google\'s X-Y-Z formula ("Accomplished [X] as measured by [Y] by doing [Z]"), and match keywords against your target job description.' },
-  { q: 'Does ResumeRoast store or share my resume?', a: 'Never. Everything runs 100% client-side in your browser via Web APIs and PDF.js. No file or text is ever uploaded to a server.' },
+  { q: 'How does ResumeRoast diagnose errors?', a: 'Our local rule-based engine parses your resume inside your browser, runs 27 checks across 5 categories, and shows the evidence and recommended fix for each result. It is a preparation tool, not a simulation of any employer’s private ATS.' },
+  { q: 'How can I improve my score?', a: 'Start with high-priority contact and section-heading findings, rewrite bullets with the X-Y-Z pattern ("Accomplished [X] as measured by [Y] by doing [Z]"), then compare your resume with a target job description. Add only skills and outcomes you can support.' },
+  { q: 'Does ResumeRoast store or share my resume?', a: 'No. Analysis runs in your browser using Web APIs, PDF.js, and JSZip. No file or resume text is sent to this site’s server.' },
   { q: 'What file formats are supported?', a: 'PDF, DOCX, DOC, and TXT. You can also paste your resume text directly into our Paste Text tab.' },
 ];
 
@@ -96,6 +96,8 @@ let activeCategory = 'All';
 let analysisResults = [];
 let lastExtractedText = '';
 let lastSignals = null;
+let lastReport = null;
+let lastJdAnalysis = null;
 
 // ── DOM REFS ──
 const uploadZone         = document.getElementById('uploadZone');
@@ -150,6 +152,8 @@ const parsedTextBox      = document.getElementById('parsedTextBox');
 const reUploadBtn        = document.getElementById('reUploadBtn');
 const checksPreviewGrid  = document.getElementById('checksPreviewGrid');
 const faqList            = document.getElementById('faqList');
+const downloadReportBtn  = document.getElementById('downloadReportBtn');
+const printReportBtn     = document.getElementById('printReportBtn');
 
 // AI Coach & Templates DOM refs
 const aiSeverityBar      = document.getElementById('aiSeverityBar');
@@ -168,6 +172,8 @@ buildChecksPreview();
 buildFAQ();
 setupUploadEvents();
 setupTabNavigation();
+downloadReportBtn.addEventListener('click', downloadReport);
+printReportBtn.addEventListener('click', () => window.print());
 
 // ── UPLOAD MODES & EVENTS ──
 function setupUploadEvents() {
@@ -480,7 +486,7 @@ function scoreCheck(check, s) {
         status = 'fail'; score = 15;
         detail = '0 quantified metrics found. Bullets do not have measurable impact ($ / % / numbers).';
         evidence = 'Experience bullet points describe tasks without measured outcomes.';
-        atsPenaltyReason = 'ATS algorithms and recruiters rank resumes with numbers ($/%, team size, volume) 40% higher.';
+        atsPenaltyReason = 'Specific, truthful numbers make impact easier for both parsers and recruiters to recognize.';
       } else if (s.metricsRatio < 0.35) {
         status = 'warn'; score = 55;
         detail = `Only ~${Math.round(s.metricsRatio * 100)}% of bullets contain quantified metrics. Aim for ≥50%.`;
@@ -560,7 +566,7 @@ function scoreCheck(check, s) {
         status = 'fail'; score = 15;
         detail = 'Resume is too brief (<180 words) — severely lacking ATS keyword coverage.';
         evidence = `Total word count is only ${s.wordCount} words.`;
-        atsPenaltyReason = 'Under-indexed resumes fail keyword threshold filters in 95% of corporate ATS systems.';
+        atsPenaltyReason = 'Sparse resumes offer fewer relevant terms for a job-description comparison.';
       } else if (s.wordCount < 350) {
         status = 'warn'; score = 60;
         detail = `Word count is modest (${s.wordCount} words). Keyword density could be richer.`;
@@ -734,7 +740,7 @@ function scoreCheck(check, s) {
         status = 'fail'; score = 15;
         detail = 'Cannot score skills match depth because Skills section is missing.';
         evidence = 'Skills section absent.';
-        atsPenaltyReason = 'Without skills, matching against job requisitions yields 0%.';
+        atsPenaltyReason = 'A clearly labelled skills section makes relevant tools easier to identify in a job-description comparison.';
       } else {
         status = 'pass'; score = 88;
         detail = 'Solid technical and core skill representation.';
@@ -865,9 +871,9 @@ function showResults(results, fileName, signals, rawText) {
   animateScore(totalScore);
 
   let verdictText, verdictColor;
-  if (totalScore >= 85) { verdictText = '🏆 Excellent — Top 10% ATS Ready'; verdictColor = '#10b981'; }
+  if (totalScore >= 85) { verdictText = '🏆 Excellent — strong parsing and content signals'; verdictColor = '#10b981'; }
   else if (totalScore >= 70) { verdictText = '👍 Good — Minor ATS Fixes Needed'; verdictColor = '#22d3ee'; }
-  else if (totalScore >= 50) { verdictText = '⚠️ At Risk — High Chance of ATS Rejection'; verdictColor = '#f59e0b'; }
+  else if (totalScore >= 50) { verdictText = '⚠️ Needs work — address the highest-impact signals'; verdictColor = '#f59e0b'; }
   else { verdictText = '🔥 Critical — Immediate Revisions Required'; verdictColor = '#ef4444'; }
   scoreVerdict.textContent = verdictText;
   scoreVerdict.style.color = verdictColor;
@@ -882,6 +888,66 @@ function showResults(results, fileName, signals, rawText) {
   buildParsedTextView(rawText, signals, fileName);
   buildAICoach(results, totalScore, signals, rawText);
   buildTemplatesView(signals);
+  lastReport = { results, totalScore, signals, fileName, rawText, verdictText };
+  lastJdAnalysis = null;
+}
+
+function escapeReportText(value) {
+  return String(value || '').replace(/[\r\n]+/g, ' ').replace(/\s+/g, ' ').trim();
+}
+
+function downloadReport() {
+  if (!lastReport) return;
+  const { results, totalScore, signals, fileName, verdictText } = lastReport;
+  const date = new Date().toLocaleDateString();
+  const issues = results.filter(r => r.status !== 'pass').sort((a, b) => a.score - b.score);
+  const categoryScores = ['Content', 'ATS', 'Design', 'Skills', 'Profile'].map(cat => {
+    const entries = results.filter(r => r.cat === cat);
+    return `${cat}: ${Math.round(entries.reduce((sum, item) => sum + item.score, 0) / entries.length)}/100`;
+  });
+  const lines = [
+    'RESUMEROAST — FREE ATS PREPARATION REPORT',
+    `Generated locally on ${date}`,
+    `File: ${escapeReportText(fileName)}`,
+    '',
+    `OVERALL SCORE: ${totalScore}/100`,
+    verdictText,
+    '',
+    'HOW TO READ THIS SCORE',
+    'This repeatable score is calculated from 27 transparent, browser-based checks. It helps identify common parsing and content issues; it is not a prediction or guarantee of an employer ATS decision.',
+    '',
+    'CATEGORY BREAKDOWN',
+    ...categoryScores,
+    '',
+    'RESUME SNAPSHOT',
+    `Words extracted: ${signals.wordCount}`,
+    `Standard section headings: ${signals.sectionHeaders}`,
+    `Metric-bearing bullets: ${signals.bulletsWithMetrics}/${signals.bulletsCount || 0}`,
+    `Email detected: ${signals.hasEmail ? 'Yes' : 'No'}`,
+    `Phone detected: ${signals.hasPhone ? 'Yes' : 'No'}`,
+    '',
+    'PRIORITIZED FINDINGS'
+  ];
+  if (!issues.length) lines.push('No failed or warning checks were found. Still tailor keywords honestly to each target job description.');
+  issues.forEach((issue, index) => {
+    lines.push('', `${index + 1}. ${issue.name} — ${issue.status === 'fail' ? 'Critical' : 'Review'}`);
+    lines.push(`Location: ${issue.loc || issue.cat}`);
+    lines.push(`Finding: ${escapeReportText(issue.detail)}`);
+    lines.push(`Evidence: ${escapeReportText(issue.evidence || issue.desc)}`);
+    lines.push(`Recommended action: ${escapeReportText(issue.tip)}`);
+  });
+  if (lastJdAnalysis) {
+    lines.push('', 'TARGET JOB DESCRIPTION MATCH', `Match: ${lastJdAnalysis.matchPct}%`, `Found: ${lastJdAnalysis.found.join(', ') || 'None'}`, `Missing: ${lastJdAnalysis.missing.join(', ') || 'None'}`);
+  }
+  lines.push('', 'PRIVACY', 'This report was generated locally in your browser. Your resume was not uploaded by ResumeRoast.');
+  const blob = new Blob([lines.join('\n')], { type: 'text/plain;charset=utf-8' });
+  const link = document.createElement('a');
+  link.href = URL.createObjectURL(blob);
+  link.download = `resume-report-${new Date().toISOString().slice(0, 10)}.txt`;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  URL.revokeObjectURL(link.href);
 }
 
 function animateScore(target) {
@@ -934,7 +1000,7 @@ function buildDiagnosisBanner(results, totalScore, s) {
   const passes = results.filter(r => r.status === 'pass');
 
   dbStats.innerHTML = `
-    <span class="db-stat-pill pill-critical">❌ ${fails.length} Fatal Errors</span>
+    <span class="db-stat-pill pill-critical">❌ ${fails.length} Critical findings</span>
     <span class="db-stat-pill pill-warning">⚠️ ${warns.length} Warnings</span>
     <span class="db-stat-pill pill-pass">✅ ${passes.length} Passed</span>
   `;
@@ -954,13 +1020,13 @@ function buildDiagnosisBanner(results, totalScore, s) {
     causes.push({ icon: '❌', text: '<strong>Missing or Unparseable Email:</strong> Automated ATS software cannot create a candidate record without a primary email key.' });
   }
   if (!s.hasLinkedIn) {
-    causes.push({ icon: '❌', text: '<strong>No LinkedIn Profile URL:</strong> 87% of corporate recruiters and ATS crawlers match candidate profiles with LinkedIn. Without a link, profile credibility is heavily reduced.' });
+    causes.push({ icon: '⚠️', text: '<strong>No LinkedIn Profile URL:</strong> A profile link can help a recruiter verify your work history, but it is optional for ATS parsing.' });
   }
   if (s.metricsRatio < 0.25) {
     causes.push({ icon: '❌', text: '<strong>Lack of Quantified Achievements (0% to low metrics):</strong> Your experience bullets describe job duties rather than measurable outcomes ($ revenue, % growth, volume, hours saved). ATS scoring algorithms favor quantified bullet points.' });
   }
   if (!s.hasSummary) {
-    causes.push({ icon: '❌', text: '<strong>Missing Professional Summary:</strong> Recruiters and ATS bots scan the first 100 words for candidate positioning. Without a summary, your resume fails the initial 6-second relevance test.' });
+    causes.push({ icon: '⚠️', text: '<strong>Missing Professional Summary:</strong> A concise summary can establish your role and specialties quickly, especially when changing careers or applying to a focused role.' });
   }
   if (s.sectionHeaders < 3) {
     causes.push({ icon: '❌', text: '<strong>Non-Standard Section Headings:</strong> Standard ATS headings ("Work Experience", "Education", "Skills") are missing or styled with creative labels that parsing bots cannot categorize.' });
@@ -975,7 +1041,7 @@ function buildDiagnosisBanner(results, totalScore, s) {
     causes.push({ icon: '⚠️', text: '<strong>Weak Action Verbs:</strong> Bullets start with passive words ("responsible for", "assisted") rather than decisive leadership verbs (Engineered, Spearheaded, Delivered).' });
   }
   if (s.wordCount < 250) {
-    causes.push({ icon: '⚠️', text: `<strong>Low Keyword Density:</strong> Total length (${s.wordCount} words) is below the threshold needed to match competitive ATS keyword searches.` });
+    causes.push({ icon: '⚠️', text: `<strong>Low Content Depth:</strong> Only ${s.wordCount} words were extracted. Add specific, truthful details about scope, tools, and results where relevant.` });
   }
 
   if (causes.length === 0) {
@@ -1061,7 +1127,7 @@ function buildRoadmapView(results, totalScore, s) {
   const steps = [
     {
       num: 1,
-      gain: '+25 ATS Pts',
+      gain: 'High impact',
       title: 'Rewrite Experience Bullets Using Google\'s X-Y-Z Formula',
       desc: 'ATS systems and hiring managers look for evidence of impact, not just a list of tasks. Formula: "Accomplished [X] as measured by [Y] by doing [Z]".',
       before: 'Responsible for managing client accounts and helping the sales team increase revenue.',
@@ -1070,7 +1136,7 @@ function buildRoadmapView(results, totalScore, s) {
     },
     {
       num: 2,
-      gain: '+20 ATS Pts',
+      gain: 'High impact',
       title: 'Standardize Primary Section Headings',
       desc: 'ATS parsers look for exact keyword matches for section titles. Creative headings like "My Journey" or "What I Do" cause parsing algorithms to drop entire sections.',
       before: 'Creative Labels: "Where I\'ve Been", "Proficiencies", "Background"',
@@ -1079,7 +1145,7 @@ function buildRoadmapView(results, totalScore, s) {
     },
     {
       num: 3,
-      gain: '+15 ATS Pts',
+      gain: 'High impact',
       title: 'Add a 3-Line High-Impact Professional Summary',
       desc: 'The summary gives ATS algorithms your core title and years of experience within the first 200 parsed tokens.',
       before: 'Objective: Hardworking developer looking for an entry-level position at a great company.',
@@ -1088,7 +1154,7 @@ function buildRoadmapView(results, totalScore, s) {
     },
     {
       num: 4,
-      gain: '+15 ATS Pts',
+      gain: 'Medium impact',
       title: 'Categorize Your Hard Skills Section',
       desc: 'Instead of an unorganized comma-separated list, group your skills into clear functional categories so parsers can index your proficiencies accurately.',
       before: 'Skills: Python, Docker, Communication, React, PostgreSQL, Leadership, AWS',
@@ -1097,7 +1163,7 @@ function buildRoadmapView(results, totalScore, s) {
     },
     {
       num: 5,
-      gain: '+10 ATS Pts',
+      gain: 'Medium impact',
       title: 'Optimize Contact Information & Add Customized LinkedIn',
       desc: 'Place your contact information cleanly at the very top of your document as plain text. Include a direct link to your LinkedIn profile.',
       before: 'John Doe | supercoder99@yahoo.com (Inside Word Header zone)',
@@ -1172,14 +1238,15 @@ function setupJdMatcher(resumeRawText) {
     jdScoreVal.style.color = matchPct >= 75 ? '#10b981' : matchPct >= 50 ? '#22d3ee' : '#ef4444';
 
     jdSummaryText.textContent = matchPct >= 75
-      ? '🎯 Excellent match! Your resume contains the majority of keywords from this job posting.'
-      : `⚠️ Missing ${missing.length} keywords from this job posting. Adding these exact terms will significantly boost your ATS ranking for this role.`;
+      ? '🎯 Strong textual overlap. Confirm that each matching term accurately reflects your experience.'
+      : `⚠️ ${missing.length} selected job terms were not found. Add only the terms you can substantiate with real experience.`;
 
     foundCount.textContent = found.length;
     missingCount.textContent = missing.length;
 
     foundKeywords.innerHTML = found.length ? found.map(k => `<span class="kw-tag kw-found">✓ ${k}</span>`).join('') : '<span style="color:#7c829a;font-size:0.8rem">None detected</span>';
     missingKeywords.innerHTML = missing.length ? missing.map(k => `<span class="kw-tag kw-missing">+ ${k}</span>`).join('') : '<span style="color:#10b981;font-size:0.8rem">All key terms present!</span>';
+    lastJdAnalysis = { matchPct, found, missing };
   };
 }
 
@@ -1357,7 +1424,7 @@ function buildFAQ() {
   });
 }
 
-// ── 6. AI COACH — Smart Diagnosis Engine ──
+// ── 6. REWRITE COACH ──
 function buildAICoach(results, totalScore, s, rawText) {
   const fails = results.filter(r => r.status === 'fail');
   const warns = results.filter(r => r.status === 'warn');
@@ -1370,28 +1437,28 @@ function buildAICoach(results, totalScore, s, rawText) {
     <span class="ai-sev-pill ai-sev-minor">✅ ${passes.length} Checks Passed</span>
   `;
 
-  // AI Diagnosis paragraph
+  // Plain-language diagnosis built from the same transparent checks as the report.
   let diagLevel, diagEmoji, diagText;
   if (totalScore >= 85) {
     diagLevel = 'Excellent';
     diagEmoji = '🏆';
-    diagText = `Your resume scores <strong>${totalScore}/100</strong>, placing it in the top 10% of ATS-optimized resumes. All critical parsing requirements are met. Minor refinements below can push you to a perfect score.`;
+    diagText = `Your resume scores <strong>${totalScore}/100</strong> on this local checklist. The common parsing and content signals are strong. Review the remaining suggestions and tailor your resume truthfully for each role.`;
   } else if (totalScore >= 70) {
     diagLevel = 'Good with Gaps';
     diagEmoji = '👍';
-    diagText = `Your resume scores <strong>${totalScore}/100</strong>. The core structure is solid, but <strong>${fails.length + warns.length} issues</strong> are reducing your ATS ranking. The most impactful fixes are: ${fails.slice(0, 3).map(f => '<strong>' + f.name + '</strong>').join(', ')}. Addressing these will push your score above 85.`;
+    diagText = `Your resume scores <strong>${totalScore}/100</strong>. The core structure is solid, but <strong>${fails.length + warns.length} findings</strong> deserve attention. Start with: ${fails.slice(0, 3).map(f => '<strong>' + f.name + '</strong>').join(', ')}. Re-run the report after each meaningful edit to see the rule-based score change.`;
   } else if (totalScore >= 50) {
-    diagLevel = 'At Risk of ATS Rejection';
+    diagLevel = 'Needs Attention';
     diagEmoji = '⚠️';
-    diagText = `Your resume scores <strong>${totalScore}/100</strong> — below the threshold most ATS systems use to pass candidates to recruiters. <strong>${fails.length} critical failures</strong> are causing automated rejection. The root causes are: ${fails.slice(0, 4).map(f => '<strong>' + f.name + '</strong>').join(', ')}. Without fixes, your resume will likely be filtered out before a human sees it.`;
+    diagText = `Your resume scores <strong>${totalScore}/100</strong>. <strong>${fails.length} critical findings</strong> indicate likely parsing or clarity problems in this checklist. Start with: ${fails.slice(0, 4).map(f => '<strong>' + f.name + '</strong>').join(', ')}. Fix the evidence shown for each item before spending time on cosmetic changes.`;
   } else {
-    diagLevel = 'Severe — Immediate Action Required';
+    diagLevel = 'Major Improvements Needed';
     diagEmoji = '🔥';
-    diagText = `Your resume scores <strong>${totalScore}/100</strong> — critically below ATS acceptance thresholds. <strong>${fails.length} fatal errors</strong> mean most automated systems will reject your application outright. Priority fixes: ${fails.slice(0, 5).map(f => '<strong>' + f.name + '</strong>').join(', ')}. Follow every suggestion below to rescue your resume.`;
+    diagText = `Your resume scores <strong>${totalScore}/100</strong>. <strong>${fails.length} critical findings</strong> should be resolved before applying. Prioritize: ${fails.slice(0, 5).map(f => '<strong>' + f.name + '</strong>').join(', ')}. The recommendations below explain the specific rule that triggered each finding.`;
   }
 
   aiDiagnosisSummary.innerHTML = `
-    <div class="ai-diag-title">${diagEmoji} AI Diagnosis: ${diagLevel}</div>
+    <div class="ai-diag-title">${diagEmoji} Report summary: ${diagLevel}</div>
     <div class="ai-diag-text">${diagText}</div>
   `;
 
@@ -1405,7 +1472,7 @@ function buildAICoach(results, totalScore, s, rawText) {
       sevClass: 'ai-sev-critical', title: 'Add a Professional Summary',
       why: 'Your resume is <strong>missing a professional summary</strong>. ATS systems scan the first 100-200 words to determine candidate relevance. Without a summary, your resume fails the 6-second recruiter screen and gets 0 relevance points from ATS keyword matching.',
       before: 'Objective: Seeking a challenging position where I can utilize my skills and grow professionally.',
-      after: `Results-driven ${s.hasJobTitle ? 'Professional' : 'Software Engineer'} with proven expertise in delivering high-impact solutions. Skilled in cross-functional collaboration, data-driven decision making, and scaling systems for growth. Track record of reducing costs by 30%+ and improving operational efficiency across teams of 10+.`,
+      after: `Results-driven ${s.hasJobTitle ? 'professional' : 'software engineer'} with [X]+ years of experience in [domain]. Skilled in [skill 1], [skill 2], and [skill 3]. Delivered [specific outcome] by [method] for [scope].`,
       action: 'Write 2-3 sentences: [Target Title] + [Years of Experience] + [Top 3 Skills] + [One Quantified Career Win]. Place immediately after your contact info.'
     });
   }
@@ -1418,7 +1485,7 @@ function buildAICoach(results, totalScore, s, rawText) {
       icon: '📊', iconBg: 'rgba(245,158,11,0.15)', severity: s.metricsRatio < 0.15 ? 'Critical' : 'Moderate',
       sevClass: s.metricsRatio < 0.15 ? 'ai-sev-critical' : 'ai-sev-moderate',
       title: 'Add Quantified Metrics to Experience Bullets',
-      why: `Only <strong>~${Math.round(s.metricsRatio * 100)}% of your bullets contain numbers</strong>. ATS scoring algorithms and recruiters rank resumes with quantified achievements ($, %, volume metrics) <strong>40% higher</strong> than task-description-only resumes.`,
+      why: `Only <strong>~${Math.round(s.metricsRatio * 100)}% of your bullets contain numbers</strong>. Truthful metrics ($, %, volume, time saved) give a recruiter concrete evidence of impact.`,
       before: weakBullet.replace(/^[-•\*]\s*/, ''),
       after: 'Generated $340K in annual recurring revenue (+28%) across 15 enterprise accounts by designing a proactive retention pipeline that reduced churn by 42%.',
       action: 'Use Google\'s X-Y-Z formula for every bullet: "Accomplished [X] as measured by [Y] by doing [Z]". Include at least one number per bullet point.'
@@ -1430,7 +1497,7 @@ function buildAICoach(results, totalScore, s, rawText) {
     suggestions.push({
       icon: '🔗', iconBg: 'rgba(99,102,241,0.15)', severity: 'Critical',
       sevClass: 'ai-sev-critical', title: 'Add Your LinkedIn Profile URL',
-      why: '<strong>87% of corporate recruiters</strong> verify candidates through LinkedIn before scheduling interviews. ATS platforms automatically enrich candidate records using LinkedIn URLs. Without one, your profile is flagged as incomplete.',
+      why: 'A clear LinkedIn URL is optional, but it can give a recruiter another way to verify relevant projects and work history.',
       before: 'John Doe | (555) 019-2834 | john@email.com',
       after: 'John Doe | New York, NY | (555) 019-2834 | john.doe@gmail.com | linkedin.com/in/johndoe',
       action: 'Create a custom LinkedIn URL (linkedin.com/in/yourname) and add it directly in your header contact line as plain text — not a hyperlink.'
@@ -1466,7 +1533,7 @@ function buildAICoach(results, totalScore, s, rawText) {
     suggestions.push({
       icon: '🛠️', iconBg: 'rgba(16,185,129,0.15)', severity: 'Critical',
       sevClass: 'ai-sev-critical', title: 'Add a Categorized Skills Section',
-      why: '<strong>No dedicated Skills section detected.</strong> ATS keyword-match engines rely on a structured list of competencies to calculate your role suitability percentage. Without it, your match score against job requisitions is effectively 0%.',
+      why: '<strong>No dedicated Skills section detected.</strong> A labelled, scannable list makes it easier to compare your relevant tools and methods with a job description.',
       before: 'Skills mentioned randomly throughout experience bullets with no dedicated section.',
       after: 'Technical Skills\nLanguages: Python, JavaScript, TypeScript, SQL\nFrameworks: React, Node.js, Django, FastAPI\nCloud/DevOps: AWS (EC2, S3, Lambda), Docker, Kubernetes, CI/CD\nTools: Git, Jira, Figma, PostgreSQL, Redis',
       action: 'Create a "Technical Skills" or "Skills" section grouped by category (Languages, Frameworks, Cloud, Tools). List 10-18 specific tools you actively use.'
@@ -1515,8 +1582,8 @@ function buildAICoach(results, totalScore, s, rawText) {
     aiSuggestionsGrid.innerHTML = `
       <div style="text-align:center;padding:48px 24px;background:var(--card-bg);border:1px solid var(--border);border-radius:var(--radius)">
         <div style="font-size:3rem;margin-bottom:12px">🎉</div>
-        <h3 style="font-size:1.3rem;font-weight:800;color:#fff;margin-bottom:8px">Your Resume Is AI-Approved!</h3>
-        <p style="color:var(--text-muted);max-width:500px;margin:0 auto">The AI Coach found no significant issues to rewrite. Your resume structure, content, and keywords are already optimized for ATS systems.</p>
+        <h3 style="font-size:1.3rem;font-weight:800;color:#fff;margin-bottom:8px">No Rewrite Patterns Needed</h3>
+        <p style="color:var(--text-muted);max-width:500px;margin:0 auto">This checklist found no significant issues to rewrite. Tailor your wording honestly to each role before you submit.</p>
       </div>
     `;
   } else {
@@ -1538,7 +1605,7 @@ function buildAICoach(results, totalScore, s, rawText) {
           </div>
 
           <div class="ai-rewrite-box">
-            <div class="ai-rewrite-label good-label">✅ AI-Suggested Rewrite:</div>
+            <div class="ai-rewrite-label good-label">✅ Suggested rewrite pattern:</div>
             <div class="ai-rewrite-content good-content">${sg.after}</div>
           </div>
 
@@ -1555,7 +1622,7 @@ function buildAICoach(results, totalScore, s, rawText) {
   // Pro Tips section
   const tips = [
     'Save your resume as a <strong>.pdf</strong> to preserve formatting — but always keep a .docx backup for ATS systems that require it.',
-    'Use a <strong>single-column layout</strong> with standard margins (0.5"–0.75"). Multi-column layouts confuse 78% of ATS parsers.',
+    'Use a <strong>single-column layout</strong> with standard margins (0.5"–0.75"). It is generally easier for parsers and people to read.',
     'Mirror the <strong>exact job title</strong> from the posting in your summary — ATS title-matching is the #1 ranking signal.',
     'Include <strong>10-18 hard skills</strong> organized by category. This maximizes keyword-match density without keyword stuffing.',
     'Run your resume through this checker <strong>after every edit</strong>. Small formatting changes can break ATS parsing unexpectedly.',
@@ -1563,7 +1630,7 @@ function buildAICoach(results, totalScore, s, rawText) {
   ];
 
   aiProTips.innerHTML = `
-    <div class="ai-pro-tips-title">💡 AI Pro Tips for Maximum ATS Score</div>
+    <div class="ai-pro-tips-title">💡 Practical resume tips</div>
     ${tips.map((tip, i) => `
       <div class="ai-pro-tip-item">
         <div class="ai-pro-tip-num">${i + 1}</div>
@@ -1580,7 +1647,7 @@ const RESUME_TEMPLATES = [
     badge: 'Most Popular',
     badgeBg: 'rgba(16,185,129,0.15)',
     badgeColor: '#6ee7b7',
-    desc: 'The gold standard single-column layout. Works with 99% of ATS systems and is preferred by Fortune 500 recruiters.',
+    desc: 'A straightforward single-column layout with conventional headings and room for clear, scannable achievements.',
     tags: ['Single Column', 'ATS-Safe', 'All Industries', '1-2 Pages'],
     template: `FIRST NAME LAST NAME
 City, State | (555) 123-4567 | email@gmail.com | linkedin.com/in/yourname

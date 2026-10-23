@@ -277,6 +277,9 @@ img, svg { display: block; }
 .score-number { font-family: var(--font-head); font-size: 3rem; font-weight: 900; color: #fff; line-height: 1; }
 .score-max { font-size: 1rem; color: var(--text-muted); align-self: flex-end; margin-bottom: 8px; margin-left: 2px; }
 .score-verdict { font-size: 1rem; font-weight: 700; }
+.score-method { margin: 10px auto 0; max-width: 260px; color: var(--text-muted); font-size: 0.75rem; line-height: 1.45; }
+.report-actions { display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; margin-top: 18px; }
+.report-actions .btn { padding: 10px 14px; font-size: 0.78rem; }
 .score-breakdown-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
 .breakdown-card {
   background: var(--card-bg); border: 1px solid var(--border);
@@ -654,4 +657,18 @@ img, svg { display: block; }
   .templates-grid { grid-template-columns: 1fr; }
   .ai-severity-bar { flex-direction: column; }
   .template-modal { padding: 20px; }
+  .report-actions { flex-direction: column; }
+  .report-actions .btn { justify-content: center; }
+}
+
+@media print {
+  .navbar, .hero, .how-section, .checks-section, .stats-section, .faq-section, .site-footer,
+  .results-main-tabs, .reupload-bar, .report-actions { display: none !important; }
+  body, .results-section { background: #fff !important; color: #111 !important; }
+  .results-section { padding: 0 !important; }
+  .results-tab-pane { display: block !important; }
+  .results-tab-pane[hidden] { display: block !important; }
+  .score-header, .diagnosis-banner, .error-item, .roadmap-step-card, .jd-matcher-box, .breakdown-card {
+    break-inside: avoid; background: #fff !important; color: #111 !important; border-color: #bbb !important;
+  }
 }

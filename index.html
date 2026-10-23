@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ResumeRoast — Free AI ATS Resume Checker | 27 Instant Checks</title>
-  <meta name="description" content="ResumeRoast gives your resume an instant AI-powered score across 27 checks — ATS compatibility, keywords, formatting, skills and more. 100% free, forever." />
+  <title>ResumeRoast — Free Private ATS Resume Checker | 27 Checks</title>
+  <meta name="description" content="ResumeRoast gives your resume a transparent local score across 27 checks — ATS compatibility, keywords, formatting, skills and more. 100% free, with no upload." />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
@@ -39,15 +39,15 @@
   <div class="hero-content container">
     <div class="hero-tag">
       <span class="tag-dot"></span>
-      AI-Powered &middot; 27 Checks &middot; Results in 30 Seconds
+      Private in-browser analysis &middot; 27 checks &middot; instant results
     </div>
     <h1 class="hero-title">
       Is your resume<br />
       <span class="gradient-text">actually good enough?</span>
     </h1>
     <p class="hero-subtitle">
-      Drop your resume and get an instant AI score across 27 critical checks &mdash;
-      ATS compatibility, keywords, layout, tone &amp; more. No sign-up. No credit card. Forever free.
+      Drop your resume and get a transparent score across 27 practical checks &mdash;
+      ATS compatibility, keywords, layout, tone &amp; more. No sign-up, no credit card, and no upload required.
     </p>
     <div class="upload-zone" id="uploadZone" role="button" tabindex="0" aria-label="Upload resume">
       <div class="upload-modes">
@@ -124,6 +124,11 @@
           </div>
         </div>
         <div class="score-verdict" id="scoreVerdict"></div>
+      <p class="score-method">A repeatable local score based on the checks shown below — not a promise of an employer's ATS decision.</p>
+      <div class="report-actions" aria-label="Report actions">
+        <button class="btn btn-primary" id="downloadReportBtn" type="button">↓ Download free report</button>
+        <button class="btn btn-secondary" id="printReportBtn" type="button">Print report</button>
+      </div>
       </div>
       <div class="score-right">
         <div class="score-breakdown-grid" id="scoreBreakdownGrid"></div>
@@ -137,7 +142,7 @@
           <span class="db-icon">🚨</span>
           <div>
             <h2 class="db-title" id="dbTitle">Why Is Your ATS Score What It Is?</h2>
-            <p class="db-subtitle" id="dbSubtitle">Detailed breakdown of fatal errors, recruiter red flags, and scoring bottlenecks.</p>
+            <p class="db-subtitle" id="dbSubtitle">Detailed breakdown of high-priority findings, supporting evidence, and next steps.</p>
           </div>
         </div>
         <div class="db-stats" id="dbStats">
@@ -168,7 +173,7 @@
         <span>🤖</span> What The ATS Sees
       </button>
       <button class="rm-tab" data-tab="tab-ai-coach" type="button">
-        <span>🧠</span> AI Coach <span class="tab-badge ai-badge">AI</span>
+        <span>🧠</span> Rewrite Coach
       </button>
       <button class="rm-tab" data-tab="tab-templates" type="button">
         <span>📄</span> ATS Templates
@@ -242,7 +247,7 @@
       <pre class="parsed-text-box" id="parsedTextBox"></pre>
     </div>
 
-    <!-- TAB 6: AI COACH -->
+    <!-- TAB 6: REWRITE COACH -->
     <div class="results-tab-pane" id="tab-ai-coach" hidden>
       <div class="ai-coach-header">
         <div class="ai-coach-icon-wrap">
@@ -250,8 +255,8 @@
           <span style="font-size:2.2rem">🧠</span>
         </div>
         <div>
-          <h3 class="ai-coach-title">AI-Powered Resume Coach</h3>
-          <p class="ai-coach-sub">Our AI engine analyzes your specific resume issues together — not just individual checks — to generate personalized, section-by-section rewrite suggestions.</p>
+          <h3 class="ai-coach-title">Resume Rewrite Coach</h3>
+          <p class="ai-coach-sub">Use the issues found in your resume to get clear, evidence-based rewrite patterns. Placeholders stay visible so you never invent achievements or metrics.</p>
         </div>
       </div>
       <div class="ai-severity-bar" id="aiSeverityBar"></div>
@@ -289,9 +294,9 @@
       </div>
       <div class="step-card">
         <div class="step-num">02</div>
-        <div class="step-icon">&#x1F916;</div>
-        <h3>AI Runs 27 Checks</h3>
-        <p>Our engine scans your resume for ATS compatibility, keyword density, formatting issues, tone, clarity, and more.</p>
+        <div class="step-icon">&#x1F50D;</div>
+        <h3>27 Checks Run Locally</h3>
+        <p>Your browser checks ATS compatibility, keyword density, formatting signals, tone, clarity, and more. Your resume is not uploaded.</p>
       </div>
       <div class="step-card">
         <div class="step-num">03</div>
@@ -307,7 +312,7 @@
   <div class="container">
     <div class="section-label">What We Analyze</div>
     <h2 class="section-title">27 checks across 5 dimensions</h2>
-    <p class="section-sub">The same checks used by top ATS systems and recruiters at Fortune 500 companies.</p>
+    <p class="section-sub">Clear, browser-based checks for the formatting and content signals common ATS software needs to parse.</p>
     <div class="checks-preview-grid" id="checksPreviewGrid"></div>
   </div>
 </section>
@@ -315,9 +320,9 @@
 <section class="stats-section">
   <div class="container">
     <div class="stats-grid">
-      <div class="stat-item"><div class="stat-num">2M+</div><div class="stat-label">Resumes Analyzed</div></div>
-      <div class="stat-item"><div class="stat-num">27</div><div class="stat-label">AI-Powered Checks</div></div>
-      <div class="stat-item"><div class="stat-num">30s</div><div class="stat-label">Average Analysis Time</div></div>
+      <div class="stat-item"><div class="stat-num">0</div><div class="stat-label">Resumes uploaded</div></div>
+      <div class="stat-item"><div class="stat-num">27</div><div class="stat-label">Transparent checks</div></div>
+      <div class="stat-item"><div class="stat-num">Local</div><div class="stat-label">Analysis location</div></div>
       <div class="stat-item"><div class="stat-num">100%</div><div class="stat-label">Free, Forever</div></div>
     </div>
   </div>
@@ -345,7 +350,7 @@
     <div class="footer-brand">
       <span class="logo-icon">&#x1F525;</span>
       <span class="logo-text">ResumeRoast</span>
-      <p>Free AI resume checker for everyone.</p>
+      <p>Free, private resume preparation for everyone.</p>
     </div>
     <div class="footer-copy">Built with love &middot; No data stored &middot; Always free</div>
   </div>
