@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ResumeRoast — Free Private ATS Resume Checker | 27 Checks</title>
+  <meta name="description" content="ResumeRoast gives your resume a transparent local score across 27 checks — ATS compatibility, keywords, formatting, skills and more. 100% free, with no upload." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Inter+Tight:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+<header class="navbar" id="navbar">
+  <div class="nav-inner">
+    <a href="index.html" class="nav-logo" aria-label="ResumeRoast home">
+      <span class="logo-icon">&#x1F525;</span>
+      <span class="logo-text">ResumeRoast</span>
+    </a>
+    <nav class="nav-links" aria-label="Primary">
+      <a href="#how-it-works">How it works</a>
+      <a href="#checks">27 Checks</a>
+      <a href="#faq">FAQ</a>
+    </nav>
+    <div class="nav-badge">
+      <span class="badge-dot"></span>
+      100% Free — Always
+    </div>
+  </div>
+</header>
+
+<section class="hero" id="home">
+  <div class="hero-bg">
+    <div class="blob blob-1"></div>
+    <div class="blob blob-2"></div>
+    <div class="blob blob-3"></div>
+    <div class="grid-overlay"></div>
+  </div>
+  <div class="hero-content container">
+    <div class="hero-tag">
+      <span class="tag-dot"></span>
+      Private in-browser analysis &middot; 27 checks &middot; instant results
+    </div>
+    <h1 class="hero-title">
+      Is your resume<br />
+      <span class="gradient-text">actually good enough?</span>
+    </h1>
+    <p class="hero-subtitle">
+      Drop your resume and get a transparent score across 27 practical checks &mdash;
+      ATS compatibility, keywords, layout, tone &amp; more. No sign-up, no credit card, and no upload required.
+    </p>
+    <div class="upload-zone" id="uploadZone" role="button" tabindex="0" aria-label="Upload resume">
+      <div class="upload-modes">
+        <button class="upload-mode-tab active" id="modeUploadTab" type="button">📄 Upload File</button>
+        <button class="upload-mode-tab" id="modePasteTab" type="button">📝 Paste Text</button>
+        <button class="upload-mode-tab sample-btn" id="sampleResumeBtn" type="button">⚡ Try Sample Resume</button>
+      </div>
+      <div class="upload-inner" id="uploadFileView">
+        <div class="upload-icon-wrap">
+          <svg class="upload-icon" viewBox="0 0 48 48" fill="none">
+            <path d="M24 4L24 32" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
+            <path d="M14 14L24 4L34 14" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M8 34V40C8 42.2 9.8 44 12 44H36C38.2 44 40 42.2 40 40V34" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
+          </svg>
+          <div class="upload-pulse"></div>
+        </div>
+        <div class="upload-text-wrap">
+          <p class="upload-primary">Drop your resume here or click to browse</p>
+          <p class="upload-secondary">PDF, DOCX, DOC, TXT &mdash; up to 10MB &middot; Parsed 100% locally in your browser</p>
+        </div>
+        <button class="btn btn-primary upload-btn" id="uploadBtn" type="button">Browse File</button>
+        <input type="file" id="fileInput" accept=".pdf,.doc,.docx,.txt" hidden />
+      </div>
+      <div class="upload-paste-view" id="uploadPasteView" hidden>
+        <p class="paste-label">Paste your resume text below for instant ATS inspection:</p>
+        <textarea id="pasteResumeInput" placeholder="Paste your resume content here (Contact info, Summary, Experience, Skills, Education)..." rows="6"></textarea>
+        <button class="btn btn-primary" id="analyzePasteBtn" type="button">Analyze Pasted Resume</button>
+      </div>
+      <div class="upload-drag-overlay" id="dragOverlay">
+        <div class="drag-text">Release to upload!</div>
+      </div>
+    </div>
+    <div class="trust-bar">
+      <div class="trust-item">&#x1F512; 100% Private Client-Side</div>
+      <div class="trust-sep">&middot;</div>
+      <div class="trust-item">&#x2705; No sign-up needed</div>
+      <div class="trust-sep">&middot;</div>
+      <div class="trust-item">&#x26A1; Pinpointed ATS Error Diagnosis</div>
+    </div>
+  </div>
+</section>
+
+<div class="analyzing-overlay" id="analyzingOverlay" hidden>
+  <div class="analyzing-card">
+    <div class="analyzing-header">
+      <div class="analyzing-logo">&#x1F525;</div>
+      <h2>Analyzing Your Resume</h2>
+      <p id="analyzingSubtitle">Extracting text &amp; running 27 ATS checks&hellip;</p>
+    </div>
+    <div class="check-progress-list" id="checkProgressList"></div>
+    <div class="progress-bar-wrap">
+      <div class="progress-bar-track">
+        <div class="progress-bar-fill" id="progressFill"></div>
+      </div>
+      <span class="progress-pct" id="progressPct">0%</span>
+    </div>
+  </div>
+</div>
+
+<section class="results-section" id="resultsSection" hidden>
+  <div class="container">
+    <!-- Top Score Overview -->
+    <div class="score-header">
+      <div class="score-left">
+        <div class="score-label">Overall ATS Score</div>
+        <div class="score-ring-wrap">
+          <svg class="score-ring" viewBox="0 0 160 160" id="scoreRing">
+            <circle class="ring-bg" cx="80" cy="80" r="68"/>
+            <circle class="ring-fill" cx="80" cy="80" r="68" id="ringFill" stroke-dasharray="427" stroke-dashoffset="427"/>
+          </svg>
+          <div class="score-center">
+            <span class="score-number" id="scoreNumber">0</span>
+            <span class="score-max">/100</span>
+          </div>
+        </div>
+        <div class="score-verdict" id="scoreVerdict"></div>
+      <p class="score-method">A repeatable local score based on the checks shown below — not a promise of an employer's ATS decision.</p>
+      <div class="report-actions" aria-label="Report actions">
+        <button class="btn btn-primary" id="downloadReportBtn" type="button">↓ Download free report</button>
+        <button class="btn btn-secondary" id="printReportBtn" type="button">Print report</button>
+      </div>
+      </div>
+      <div class="score-right">
+        <div class="score-breakdown-grid" id="scoreBreakdownGrid"></div>
+      </div>
+    </div>
+
+    <!-- PRIMARY DIAGNOSIS: Why ATS is Low & Executive Summary -->
+    <div class="diagnosis-banner" id="diagnosisBanner">
+      <div class="diagnosis-banner-header">
+        <div class="db-title-wrap">
+          <span class="db-icon">🚨</span>
+          <div>
+            <h2 class="db-title" id="dbTitle">Why Is Your ATS Score What It Is?</h2>
+            <p class="db-subtitle" id="dbSubtitle">Detailed breakdown of high-priority findings, supporting evidence, and next steps.</p>
+          </div>
+        </div>
+        <div class="db-stats" id="dbStats">
+          <!-- Injected via JS: ❌ X Critical, ⚠️ Y Warnings, ✅ Z Passed -->
+        </div>
+      </div>
+      <div class="db-reasons-box" id="dbReasonsBox">
+        <h3 class="db-reasons-heading">⚠️ Primary Causes Dragging Your Score Down:</h3>
+        <ul class="db-reasons-list" id="dbReasonsList"></ul>
+      </div>
+    </div>
+
+    <!-- MAIN ACTION NAVIGATION TABS -->
+    <div class="results-main-tabs" id="resultsMainTabs">
+      <button class="rm-tab active" data-tab="tab-errors" type="button">
+        <span>🔍</span> Where Are The Errors? <span class="tab-badge error-badge" id="errorCountBadge">0</span>
+      </button>
+      <button class="rm-tab" data-tab="tab-roadmap" type="button">
+        <span>🚀</span> How To Improve (+90 Plan)
+      </button>
+      <button class="rm-tab" data-tab="tab-jd" type="button">
+        <span>🎯</span> Match Job Description
+      </button>
+      <button class="rm-tab" data-tab="tab-all-checks" type="button">
+        <span>📋</span> All 27 Checks
+      </button>
+      <button class="rm-tab" data-tab="tab-ats-view" type="button">
+        <span>🤖</span> What The ATS Sees
+      </button>
+      <button class="rm-tab" data-tab="tab-ai-coach" type="button">
+        <span>🧠</span> Rewrite Coach
+      </button>
+      <button class="rm-tab" data-tab="tab-templates" type="button">
+        <span>📄</span> ATS Templates
+      </button>
+    </div>
+
+    <!-- TAB 1: WHERE ARE THE ERRORS? (Pinpointed Issues) -->
+    <div class="results-tab-pane active" id="tab-errors">
+      <div class="pane-header">
+        <h3>Specific Resume Errors &amp; Where They Occurred</h3>
+        <p>These are the exact points where ATS parsers and automated filters flag your document as incomplete or low-match.</p>
+      </div>
+      <div class="errors-container" id="errorsContainer"></div>
+    </div>
+
+    <!-- TAB 2: HOW TO IMPROVE (Step-by-step roadmap with points) -->
+    <div class="results-tab-pane" id="tab-roadmap" hidden>
+      <div class="pane-header">
+        <h3>Step-by-Step ATS Score Improvement Roadmap</h3>
+        <p>Follow these prioritized steps in order to take your resume from your current score to 90+.</p>
+      </div>
+      <div class="roadmap-container" id="roadmapContainer"></div>
+    </div>
+
+    <!-- TAB 3: MATCH JOB DESCRIPTION -->
+    <div class="results-tab-pane" id="tab-jd" hidden>
+      <div class="jd-matcher-box">
+        <div class="pane-header">
+          <h3>Compare Against Your Target Job Description</h3>
+          <p>ATS algorithms rank candidates by matching resume keywords against the specific job posting. Paste the job description below to reveal your exact keyword gap.</p>
+        </div>
+        <div class="jd-input-wrap">
+          <textarea id="jdInput" placeholder="Paste target job posting here (e.g. Senior Frontend Developer, Product Manager, Data Analyst)..." rows="5"></textarea>
+          <button class="btn btn-primary" id="runJdMatchBtn" type="button">⚡ Scan For Matching &amp; Missing Keywords</button>
+        </div>
+        <div class="jd-results-wrap" id="jdResultsWrap" hidden>
+          <div class="jd-score-bar">
+            <div>
+              <div class="jd-score-label">Job Match Compatibility</div>
+              <div class="jd-score-val" id="jdScoreVal">0%</div>
+            </div>
+            <div class="jd-summary-text" id="jdSummaryText"></div>
+          </div>
+          <div class="jd-keywords-split">
+            <div class="jd-col">
+              <h4 class="col-title match-title">✅ Found in Your Resume (<span id="foundCount">0</span>)</h4>
+              <div class="keyword-tags" id="foundKeywords"></div>
+            </div>
+            <div class="jd-col">
+              <h4 class="col-title missing-title">❌ Missing ATS Keywords (<span id="missingCount">0</span>) &mdash; Add These!</h4>
+              <div class="keyword-tags" id="missingKeywords"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 4: ALL 27 CHECKS -->
+    <div class="results-tab-pane" id="tab-all-checks" hidden>
+      <div class="cat-tabs" id="catTabs" role="tablist"></div>
+      <div class="checks-grid" id="checksGrid"></div>
+    </div>
+
+    <!-- TAB 5: WHAT THE ATS SEES -->
+    <div class="results-tab-pane" id="tab-ats-view" hidden>
+      <div class="pane-header">
+        <h3>Extracted Plain Text Preview</h3>
+        <p>This is the raw, unstyled text stream that automated Applicant Tracking Systems parse. If sections appear garbled or missing here, ATS software cannot evaluate them.</p>
+      </div>
+      <div class="parsed-text-meta" id="parsedTextMeta"></div>
+      <pre class="parsed-text-box" id="parsedTextBox"></pre>
+    </div>
+
+    <!-- TAB 6: REWRITE COACH -->
+    <div class="results-tab-pane" id="tab-ai-coach" hidden>
+      <div class="ai-coach-header">
+        <div class="ai-coach-icon-wrap">
+          <span class="ai-pulse-dot"></span>
+          <span style="font-size:2.2rem">🧠</span>
+        </div>
+        <div>
+          <h3 class="ai-coach-title">Resume Rewrite Coach</h3>
+          <p class="ai-coach-sub">Use the issues found in your resume to get clear, evidence-based rewrite patterns. Placeholders stay visible so you never invent achievements or metrics.</p>
+        </div>
+      </div>
+      <div class="ai-severity-bar" id="aiSeverityBar"></div>
+      <div class="ai-diagnosis-summary" id="aiDiagnosisSummary"></div>
+      <div class="ai-suggestions-grid" id="aiSuggestionsGrid"></div>
+      <div class="ai-pro-tips" id="aiProTips"></div>
+    </div>
+
+    <!-- TAB 7: ATS TEMPLATES -->
+    <div class="results-tab-pane" id="tab-templates" hidden>
+      <div class="templates-header">
+        <h3 class="templates-title">🏗️ ATS-Optimized Resume Templates</h3>
+        <p class="templates-sub">These proven layouts are designed to score 90+ on every major ATS platform. Each template uses standard section headers, single-column formatting, and ATS-safe typography. Click "Copy Template" to get started.</p>
+      </div>
+      <div class="templates-grid" id="templatesGrid"></div>
+    </div>
+
+    <div class="reupload-bar">
+      <p>Made edits to your resume? Re-test now to see your improved score!</p>
+      <button class="btn btn-secondary" id="reUploadBtn" type="button">Check Another Resume</button>
+    </div>
+  </div>
+</section>
+
+<section class="how-section" id="how-it-works">
+  <div class="container">
+    <div class="section-label">How It Works</div>
+    <h2 class="section-title">Three steps to a better resume</h2>
+    <div class="steps-grid">
+      <div class="step-card">
+        <div class="step-num">01</div>
+        <div class="step-icon">&#x1F4C4;</div>
+        <h3>Upload Your Resume</h3>
+        <p>Drop your PDF or DOCX file. We extract text using advanced parsing &mdash; no data is stored on our servers.</p>
+      </div>
+      <div class="step-card">
+        <div class="step-num">02</div>
+        <div class="step-icon">&#x1F50D;</div>
+        <h3>27 Checks Run Locally</h3>
+        <p>Your browser checks ATS compatibility, keyword density, formatting signals, tone, clarity, and more. Your resume is not uploaded.</p>
+      </div>
+      <div class="step-card">
+        <div class="step-num">03</div>
+        <div class="step-icon">&#x1F3AF;</div>
+        <h3>Get Actionable Fixes</h3>
+        <p>Every check comes with a specific, actionable improvement tip &mdash; not just a score but a road map to get hired.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="checks-section" id="checks">
+  <div class="container">
+    <div class="section-label">What We Analyze</div>
+    <h2 class="section-title">27 checks across 5 dimensions</h2>
+    <p class="section-sub">Clear, browser-based checks for the formatting and content signals common ATS software needs to parse.</p>
+    <div class="checks-preview-grid" id="checksPreviewGrid"></div>
+  </div>
+</section>
+
+<section class="stats-section">
+  <div class="container">
+    <div class="stats-grid">
+      <div class="stat-item"><div class="stat-num">0</div><div class="stat-label">Resumes uploaded</div></div>
+      <div class="stat-item"><div class="stat-num">27</div><div class="stat-label">Transparent checks</div></div>
+      <div class="stat-item"><div class="stat-num">Local</div><div class="stat-label">Analysis location</div></div>
+      <div class="stat-item"><div class="stat-num">100%</div><div class="stat-label">Free, Forever</div></div>
+    </div>
+  </div>
+</section>
+
+<section class="faq-section" id="faq">
+  <div class="container">
+    <div class="section-label">FAQ</div>
+    <h2 class="section-title">Common questions</h2>
+    <div class="faq-list" id="faqList"></div>
+  </div>
+</section>
+
+<div class="template-modal-overlay" id="templateModalOverlay">
+  <div class="template-modal">
+    <button class="template-modal-close" id="templateModalClose" type="button">&times;</button>
+    <h3 class="template-modal-title" id="templateModalTitle"></h3>
+    <pre class="template-modal-content" id="templateModalContent"></pre>
+    <button class="template-modal-copy-btn" id="templateModalCopyBtn" type="button">📋 Copy Full Template to Clipboard</button>
+  </div>
+</div>
+
+<footer class="site-footer">
+  <div class="container footer-inner">
+    <div class="footer-brand">
+      <span class="logo-icon">&#x1F525;</span>
+      <span class="logo-text">ResumeRoast</span>
+      <p>Free, private resume preparation for everyone.</p>
+    </div>
+    <div class="footer-copy">Built with love &middot; No data stored &middot; Always free</div>
+  </div>
+</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

@@ -16,4 +16,4 @@ No resume file or text is uploaded by this site. The score is deterministic: the
 
 ## Run locally
 
-Open `index.html` in a modern browser. The page uses PDF.js and JSZip from CDNJS for PDF and DOCX text extraction.
+Open `index.html` in a modern browser for the interactive landing page, or open `app.html` directly for the ATS resume preparation tool. The page uses PDF.js and JSZip from CDNJS for PDF and DOCX text extraction.
