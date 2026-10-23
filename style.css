@@ -634,6 +634,10 @@ img, svg { display: block; }
 
 /* ─── RESPONSIVE ─── */
 @media (max-width: 900px) {
+  .container { padding-inline: 20px; }
+  .hero { min-height: auto; }
+  .hero-content { padding-block: 112px 88px; }
+  .upload-zone { max-width: 640px; }
   .score-header { grid-template-columns: 1fr; justify-items: center; }
   .score-breakdown-grid { grid-template-columns: 1fr 1fr; width: 100%; }
   .steps-grid { grid-template-columns: 1fr; }
@@ -644,6 +648,61 @@ img, svg { display: block; }
   .templates-grid { grid-template-columns: 1fr; }
   .ai-coach-header { flex-direction: column; }
 }
+
+@media (max-width: 720px) {
+  .container { padding-inline: 16px; }
+  .nav-inner { padding-inline: 16px; height: 58px; gap: 16px; }
+  .navbar { position: sticky; }
+  .hero { padding-top: 0; }
+  .hero-content { padding: 64px 16px 72px; }
+  .hero-tag { margin-bottom: 22px; font-size: 0.72rem; padding: 5px 12px; }
+  .hero-subtitle { margin-bottom: 30px; }
+  .upload-zone { padding: 24px 16px; border-radius: 18px; }
+  .upload-modes { width: 100%; display: grid; grid-template-columns: 1fr 1fr; border-radius: 14px; }
+  .upload-mode-tab { min-width: 0; padding: 9px 6px; font-size: 0.75rem; }
+  .sample-btn { grid-column: 1 / -1; }
+  .upload-primary { font-size: 1rem; }
+  .upload-secondary { font-size: 0.78rem; }
+  .upload-btn, #analyzePasteBtn, #runJdMatchBtn { width: 100%; justify-content: center; }
+  .trust-bar { gap: 8px 12px; font-size: 0.75rem; }
+  .trust-sep { display: none; }
+
+  .results-section, .how-section, .checks-section, .faq-section { padding-block: 56px; }
+  .score-header { gap: 28px; margin-bottom: 36px; }
+  .score-breakdown-grid { gap: 10px; }
+  .breakdown-card { padding: 16px; }
+  .diagnosis-banner, .jd-matcher-box { padding: 18px; }
+  .diagnosis-banner-header { gap: 14px; }
+  .db-title-wrap { gap: 10px; }
+  .db-icon { font-size: 1.4rem; }
+  .db-title { font-size: 1.1rem; }
+  .db-stat-pill { font-size: 0.72rem; padding: 4px 8px; }
+  .db-reasons-box { padding: 14px; }
+
+  .results-main-tabs { margin-inline: -16px; padding-inline: 16px; gap: 8px; }
+  .rm-tab { padding: 9px 13px; font-size: 0.8rem; }
+  .pane-header h3, .templates-title { font-size: 1.15rem; }
+  .error-item, .roadmap-step-card { padding: 16px; }
+  .error-item-title-wrap { align-items: flex-start; }
+  .error-item-title { font-size: 0.92rem; }
+  .error-evidence-box, .error-fix-box { padding: 10px; }
+  .step-points-gain { white-space: nowrap; }
+  .jd-score-bar { align-items: flex-start; padding: 14px; }
+  .jd-score-val { font-size: 1.7rem; }
+  .parsed-text-meta { flex-wrap: wrap; gap: 6px 10px; }
+  .parsed-text-box { padding: 14px; font-size: 0.76rem; max-height: 360px; }
+
+  .ai-coach-header, .ai-diagnosis-summary, .ai-pro-tips { padding: 18px; }
+  .ai-suggest-card-header, .ai-suggest-body { padding: 16px; }
+  .ai-suggest-card-header { align-items: flex-start; }
+  .ai-suggest-card-header .ai-sev-tag { margin-left: 0; }
+  .template-preview { padding: 16px; min-height: 170px; }
+  .template-info { padding: 16px; }
+  .template-modal-overlay { padding: 12px; align-items: flex-end; }
+  .template-modal { max-height: 92vh; padding: 24px 16px 16px; border-radius: 18px 18px 0 0; }
+  .template-modal-content { padding: 14px; font-size: 0.74rem; }
+}
+
 @media (max-width: 600px) {
   .nav-links { display: none; }
   .nav-badge { display: none; }
@@ -659,6 +718,20 @@ img, svg { display: block; }
   .template-modal { padding: 20px; }
   .report-actions { flex-direction: column; }
   .report-actions .btn { justify-content: center; }
+}
+
+@media (max-width: 390px) {
+  .logo-text { font-size: 1.05rem; }
+  .hero-title { font-size: 2.05rem; }
+  .hero-subtitle { font-size: 0.92rem; }
+  .score-ring-wrap { transform: scale(0.9); margin-block: -8px; }
+  .score-breakdown-grid, .stats-grid { grid-template-columns: 1fr; }
+  .db-title-wrap { flex-direction: column; }
+  .db-stats { gap: 6px; }
+  .error-item-title-wrap, .ai-pro-tip-item { flex-direction: column; }
+  .before-after-box { padding: 10px; }
+  .template-actions { flex-direction: column; }
+  .template-btn { width: 100%; }
 }
 
 @media print {
